@@ -1,6 +1,12 @@
 package com.scheduleappdevelop2.service;
 
+import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleRequest;
+import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleResponse;
+import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleRequest;
+import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleResponse;
+import com.scheduleappdevelop2.dto.findSchedule.ScheduleResponse;
 import com.scheduleappdevelop2.entity.Schedule;
+import com.scheduleappdevelop2.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,35 +29,28 @@ public class ScheduleService {
     public CreateScheduleResponse createSchedule(CreateScheduleRequest requestData) {
 
         // 1) 요청 데이터 검증 (비어있는 값이 있으면 바로 예외 발생)
-        if (requestData.getToDoTitle() == null || requestData.getToDoTitle().isBlank()) {
+        if (requestData.getTitle() == null || requestData.getTitle().isBlank()) {
             throw new IllegalArgumentException("제목은 필수입니다.");
         }
-        if (requestData.getToDoContent() == null || requestData.getToDoContent().isBlank()) {
+        if (requestData.getContent() == null || requestData.getContent().isBlank()) {
             throw new IllegalArgumentException("내용은 필수입니다.");
         }
-        if (requestData.getToDoWriter() == null || requestData.getToDoWriter().isBlank()) {
+        if (requestData.getWriter() == null || requestData.getWriter().isBlank()) {
             throw new IllegalArgumentException("작성자는 필수입니다.");
         }
 
         // 2) 엔티티에 데이터 넣기 (of() 사용)
         Schedule schedule = Schedule.of(
-                requestData.getToDoTitle(),
-                requestData.getToDoContent(),
-                requestData.getToDoWriter()
+                requestData.getTitle(),
+                requestData.getContent(),
+                requestData.getWriter()
         );
 
         // 3) 엔터티에 넣은 내용 DB에 저장하기
         Schedule saved = scheduleRepository.save(schedule);
 
         // 4) 저장된 엔티티를 DTO로 변환해서 응답
-        return new CreateScheduleResponse(
-                saved.getId(),
-                saved.getTitle(),
-                saved.getContent(),
-                saved.getWriter(),
-                saved.getCreatedAt(),
-                saved.getModifiedAt()
-        );
+        return CreateScheduleResponse.from(saved);
     }
 
     /**
@@ -103,13 +102,7 @@ public class ScheduleService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 일정이 없습니다."));
 
         // 엔티티에게 직접 업데이트 일을 시킨다 (도메인 주도 설계 느낌)
-        //제목
-        if(requestData.getToDoTitle() != null) { schedule.setTitle(requestData.getToDoTitle()); }
-        //내용
-        if(requestData.getToDoContent() != null) { schedule.setContent(requestData.getToDoContent()); }
-
-        // 엔티티에게 직접 업데이트 일을 시킨다 (도메인 주도 설계 느낌)
-        schedule.update(requestData.getToDoTitle(), requestData.getToDoContent());
+        schedule.update(requestData.getTitle(), requestData.getContent());
 
 
         // 변경된 엔티티를 DTO로 만들어 반환

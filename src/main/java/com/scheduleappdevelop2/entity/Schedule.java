@@ -8,8 +8,8 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Table(name = "schedules")
-@NoArgsConstructor(access = PROTECTED) // JPA 전용 기본 생성자 (개발자는 사용 X)
-public class Schedule {
+@NoArgsConstructor(access = PROTECTED) // JPA가 엔티티를 생성할 때 사용하는 기본 생성자. 개발자는 직접 사용하지 못하게 보호
+public class Schedule extends BaseTimeEntity {
 
     /**
      * 고유 식별자(PK)
@@ -18,7 +18,7 @@ public class Schedule {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 기본 키. DB가 자동 증가시키며, 저장 시점에 값이 채워짐
 
     /**
      * 일정 제목
@@ -26,7 +26,7 @@ public class Schedule {
      * - 비어 있으면 DB에서 에러 발생
      */
     @Column(length = 100, nullable = false)
-    private String title;
+    private String title; // 일정 제목. 비워둘 수 없고 최대 100자까지 저장 가능.
 
     /**
      * 일정 상세 내용
@@ -34,14 +34,14 @@ public class Schedule {
      * - null 불가능
      */
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
+    private String content; // 일정 내용. 길이에 제한이 없으므로 TEXT 타입 사용.
 
     /**
      * 작성자 이름
      * - 필수 값, 최대 100자
      */
     @Column(length = 100, nullable = false)
-    private String writer;
+    private String writer;// 작성자. 필수값이며 최대 100자.
 
     /**
      * 개발자가 직접 사용하는 생성자
@@ -70,9 +70,9 @@ public class Schedule {
      * - 서비스가 직접 setter를 호출하는 것보다 유지보수가 훨씬 좋다.
      */
     //업데이트
-    public void update(String toDoTitle, String toDoContent){
-        if(toDoTitle != null)this.title = toDoTitle;
-        if(toDoContent != null)this.content = toDoContent;
+    public void update(String title, String content){
+        if(title != null)this.title = title;
+        if(content != null)this.content = content;
     }
 
     //getter
@@ -80,13 +80,4 @@ public class Schedule {
     public String getTitle() { return title; }
     public String getContent() { return content; }
     public String getWriter() { return writer; }
-
-    /**
-     * Setter (비교용)
-     * - 블로그에서 update 방식과 setter 방식 비교 설명할 때 사용하기 위해 남김
-     * - 실무에서는 setter 사용을 최소화하는 것이 일반적이다.
-     */
-    //setter
-    public void setTitle(String toDoTitle) { this.title = toDoTitle; }
-    public void setContent(String toDoContent) { this.content = toDoContent; }
 }
