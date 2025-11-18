@@ -28,9 +28,9 @@ public class User extends BaseTimeEntity {
     /**
      * 유저 이름
      * - 필수값, 최대 30자
-     * - unique=true → 중복 허용 안 함
+     * - 중복 허용
      */
-    @Column(length = 30, nullable = false, unique = true)
+    @Column(length = 30, nullable = false)
     private String name;
 
     /**
@@ -42,23 +42,33 @@ public class User extends BaseTimeEntity {
     private String email;
 
     /**
+     * 비밀번호
+     * - 필수값, 최대 16자
+     * - 중복 허용
+     */
+    @Column(length = 50, nullable = false)
+    private String password;
+
+    /**
      * 실제 개발자가 사용할 생성자
      * - Builder 패턴으로만 생성되도록 제한
      */
     @Builder
-    private User(String name, String email) {
+    private User(String name, String email, String password) {
         this.name = name;
         this.email = email;
+        this.password = password;
     }
 
     /**
      * 정적 팩토리 메서드
      * - User 객체 생성 시 안정적인 생성 경로 제공
      */
-    public static User of(String name, String email){
+    public static User of(String name, String email, String password){
         return User.builder()
                 .name(name)
                 .email(email)
+                .password(password)
                 .build();
     }
 
@@ -73,7 +83,8 @@ public class User extends BaseTimeEntity {
     }
 
     //getter
-    public Long getId() { return id;}
+    public Long getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
+    public String getPassword() { return password; }
 }

@@ -39,7 +39,8 @@ public class UserService {
         // DTO → 엔터티 변환 (정적 팩토리 메서드 사용)
         User user = User.of(
                 requestData.getName(),
-                requestData.getEmail()
+                requestData.getEmail(),
+                requestData.getPassword()
         );
 
         // 엔터티 저장
@@ -92,7 +93,6 @@ public class UserService {
         // 수정된 객체를 응답DTO로 변환
         return UpdateUserResponse.from(user);
     }
-
 
     /**
      * 유저 삭제
