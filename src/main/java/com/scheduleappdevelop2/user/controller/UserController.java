@@ -1,11 +1,11 @@
 package com.scheduleappdevelop2.user.controller;
 
-import com.scheduleappdevelop2.dto.user.UserCreateRequest;
-import com.scheduleappdevelop2.dto.user.UserCreateResponse;
-import com.scheduleappdevelop2.dto.user.UserResponse;
-import com.scheduleappdevelop2.dto.user.UpdateUserRequest;
-import com.scheduleappdevelop2.dto.user.UpdateUserResponse;
-import com.scheduleappdevelop2.service.UserService;
+
+import com.scheduleappdevelop2.user.dto.updateUser.UpdateUserRequest;
+import com.scheduleappdevelop2.user.dto.updateUser.UpdateUserResponse;
+import com.scheduleappdevelop2.user.dto.userCreate.UserCreateRequest;
+import com.scheduleappdevelop2.user.dto.userCreate.UserCreateResponse;
+import com.scheduleappdevelop2.user.dto.userResponse.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

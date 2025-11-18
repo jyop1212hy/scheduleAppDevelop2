@@ -1,5 +1,6 @@
 package com.scheduleappdevelop2.schedule.entity;
 
+import com.scheduleappdevelop2.global.baseTimeEntity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -71,8 +72,8 @@ public class Schedule extends BaseTimeEntity {
      */
     //업데이트
     public void update(String title, String content){
-        if(title != null)this.title = title;
-        if(content != null)this.content = content;
+        if(title != null) { this.title = title; }
+        if(content != null) { this.content = content; }
     }
 
     //getter

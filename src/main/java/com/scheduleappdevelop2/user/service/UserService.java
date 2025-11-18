@@ -1,8 +1,17 @@
 package com.scheduleappdevelop2.user.service;
 
+import com.scheduleappdevelop2.user.dto.updateUser.UpdateUserRequest;
+import com.scheduleappdevelop2.user.dto.updateUser.UpdateUserResponse;
+import com.scheduleappdevelop2.user.dto.userResponse.UserResponse;
+import com.scheduleappdevelop2.user.dto.userCreate.UserCreateRequest;
+import com.scheduleappdevelop2.user.dto.userCreate.UserCreateResponse;
+import com.scheduleappdevelop2.user.entity.User;
+import com.scheduleappdevelop2.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -71,10 +80,13 @@ public class UserService {
      */
     @Transactional
     public UpdateUserResponse updateUser(Long id, UpdateUserRequest requestData) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+        if(requestData.getName() == null && requestData.getEmail() == null) {
+                throw new IllegalArgumentException("수정할 데이터가 없습니다.");
+        }
 
         // 엔터티에게 수정 명령
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(id + " 의 유저를 찾을 수 없습니다."));
         user.update(requestData.getName(), requestData.getEmail());
 
         // 수정된 객체를 응답DTO로 변환
@@ -89,7 +101,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long id) {
         if(!userRepository.existsById(id)) {
-                throw new IllegalArgumentException("해당 유저가 없습니다.");
+                throw new IllegalArgumentException(id + " 의 유저를 찾을 수 없습니다.");
         }
         userRepository.deleteById(id);
     }

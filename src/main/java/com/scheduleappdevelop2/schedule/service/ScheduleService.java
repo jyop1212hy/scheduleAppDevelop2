@@ -80,7 +80,7 @@ public class ScheduleService {
 
         // 1) 데이터베이스 PK와 비교 후 맞으면 엔터티 형태로 가져옴
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 일정이 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다."));
 
         // 2) DTO로 전달
         return ScheduleResponse.from(schedule);
@@ -96,12 +96,14 @@ public class ScheduleService {
      */
     @Transactional
     public UpdateScheduleResponse updateSchedule(Long id, UpdateScheduleRequest requestData) {
-
-        // 데이터베이스 PK와 비교 후 맞으면 엔터티 형태로 가져옴
-        Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 일정이 없습니다."));
+        if(requestData.getTitle() == null || requestData.getContent() == null || requestData.getWriter() == null) {
+            // 데이터베이스 PK와 비교 후 맞으면 엔터티 형태로 가져옴
+            throw new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다.");
+        }
 
         // 엔티티에게 직접 업데이트 일을 시킨다 (도메인 주도 설계 느낌)
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(id + " 의 유저를 찾을 수 없습니다."));
         schedule.update(requestData.getTitle(), requestData.getContent());
 
 
@@ -119,7 +121,7 @@ public class ScheduleService {
 
         //데이터베이스 PK와 비교 후 맞으면 엔터티 형태로 가져옴
         if(!scheduleRepository.existsById(id)) {
-                throw new IllegalArgumentException("해당 일정이 없습니다.");
+                throw new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다.");
         }
 
         //데이터베이스에서 삭제 하기

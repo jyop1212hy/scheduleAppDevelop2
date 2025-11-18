@@ -1,4 +1,4 @@
-package com.scheduleappdevelop2.schedule.entity;
+package com.scheduleappdevelop2.global.baseTimeEntity;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
