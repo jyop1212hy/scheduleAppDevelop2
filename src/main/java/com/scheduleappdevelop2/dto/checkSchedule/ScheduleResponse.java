@@ -1,4 +1,4 @@
-package com.scheduleappdevelop2.dto.findSchedule;
+package com.scheduleappdevelop2.dto.checkSchedule;
 
 import com.scheduleappdevelop2.entity.Schedule;
 import java.time.LocalDateTime;

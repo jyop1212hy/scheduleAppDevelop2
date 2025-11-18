@@ -4,7 +4,7 @@ import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleResponse;
 import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleRequest;
 import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleResponse;
-import com.scheduleappdevelop2.dto.findSchedule.ScheduleResponse;
+import com.scheduleappdevelop2.dto.checkSchedule.ScheduleResponse;
 import com.scheduleappdevelop2.entity.Schedule;
 import com.scheduleappdevelop2.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;

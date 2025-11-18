@@ -4,7 +4,7 @@ import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleResponse;
 import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleResponse;
 import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleRequest;
-import com.scheduleappdevelop2.dto.findSchedule.ScheduleResponse;
+import com.scheduleappdevelop2.dto.checkSchedule.ScheduleResponse;
 import com.scheduleappdevelop2.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +35,7 @@ public class ScheduleController {
      * - 모든 일정 정보를 조회하여 리스트 형태로 반환한다.
      */
     @GetMapping
-    public List<ScheduleResponse> findAll() {
+    public List<ScheduleResponse> checkAll() {
         return scheduleService.checkAllSchedules();
     }
 
@@ -44,7 +44,7 @@ public class ScheduleController {
      * - URL 경로에서 받은 id를 기반으로 특정 일정 정보를 반환한다.
      */
     @GetMapping("/{id}")
-    public ScheduleResponse findOne(@PathVariable Long id) {
+    public ScheduleResponse checkOne(@PathVariable Long id) {
         return scheduleService.checkOneSchedule(id);
     }
 
