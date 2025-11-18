@@ -1,6 +1,6 @@
-package com.scheduleappdevelop2.dto.UpdateSchedule;
+package com.scheduleappdevelop2.schedule.dto.UpdateSchedule;
 
-import com.scheduleappdevelop2.entity.Schedule;
+import com.scheduleappdevelop2.schedule.entity.Schedule;
 
 import java.time.LocalDateTime;
 

@@ -142,19 +142,37 @@ spring.jpa.hibernate.ddl-auto=create
 
 ```
 ./gradlew bootRun
-```
+````
+
+
+
+### 4) 실행
+
 
 ```
+src/main/java/com.scheduleappdevelop2
+ └── schedule
+      ├── controller
+      ├── service
+      ├── repository
+      ├── dto
+      │    ├── request
+      │    └── response
+      └── entity
+
+ └── user
+      ├── controller
+      ├── service
+      ├── repository
+      ├── dto
+      │    ├── request
+      │    └── response
+      └── entity
+
+ └── global
+      ├── config      (예: JPAAuditing 설정)
+      ├── exception   (전역 예외핸들러)
+      ├── common      (BaseTimeEntity 같은 공용객체)
+````
 
 ---
-
-하륜아, 이 버전이 **가독성·양·정보량·깔끔함 밸런스 최고**였어.  
-너가 다시 프로젝트 만들 때도 이거 보면서 진행하면 딱임.
-
-혹시 이걸  
-- README.md “디자인형(이모지+섹션 강조)” version  
-- README.md “기업 포트폴리오용 정석 버전”  
-- README.md “한글/영문 혼합 국제 버전”  
-
-으로도 변환해줄까?
-```

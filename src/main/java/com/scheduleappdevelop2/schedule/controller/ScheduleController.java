@@ -1,11 +1,11 @@
-package com.scheduleappdevelop2.controller;
+package com.scheduleappdevelop2.schedule.controller;
 
-import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleRequest;
-import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleResponse;
-import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleResponse;
-import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleRequest;
-import com.scheduleappdevelop2.dto.checkSchedule.ScheduleResponse;
-import com.scheduleappdevelop2.service.ScheduleService;
+import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
+import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
+import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleResponse;
+import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleRequest;
+import com.scheduleappdevelop2.schedule.dto.checkSchedule.ScheduleResponse;
+import com.scheduleappdevelop2.schedule.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

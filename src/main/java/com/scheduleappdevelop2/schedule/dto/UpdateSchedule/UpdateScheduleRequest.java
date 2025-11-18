@@ -1,6 +1,4 @@
-package com.scheduleappdevelop2.dto.UpdateSchedule;
-
-import com.scheduleappdevelop2.entity.Schedule;
+package com.scheduleappdevelop2.schedule.dto.UpdateSchedule;
 
 /**
  * UpdateScheduleRequest

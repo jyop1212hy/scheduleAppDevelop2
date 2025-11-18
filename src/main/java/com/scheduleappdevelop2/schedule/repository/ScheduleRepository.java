@@ -1,6 +1,6 @@
-package com.scheduleappdevelop2.repository;
+package com.scheduleappdevelop2.schedule.repository;
 
-import com.scheduleappdevelop2.entity.Schedule;
+import com.scheduleappdevelop2.schedule.entity.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

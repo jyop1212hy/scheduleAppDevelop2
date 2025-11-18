@@ -1,4 +1,4 @@
-package com.scheduleappdevelop2.controller;
+package com.scheduleappdevelop2.user.controller;
 
 import com.scheduleappdevelop2.dto.user.UserCreateRequest;
 import com.scheduleappdevelop2.dto.user.UserCreateResponse;
@@ -27,7 +27,7 @@ public class UserController {
      * - @RequiredArgsConstructor 덕분에 자동으로 생성자 주입됨.
      * - final 필드여야만 주입 가능 → 안정성 확보.
      */
-    private final UserService userService;
+    private final com.scheduleappdevelop2.user.service.UserService userService;
 
     /**
      * 유저 생성

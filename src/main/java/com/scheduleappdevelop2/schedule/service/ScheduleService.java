@@ -1,12 +1,12 @@
-package com.scheduleappdevelop2.service;
+package com.scheduleappdevelop2.schedule.service;
 
-import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleRequest;
-import com.scheduleappdevelop2.dto.UpdateSchedule.UpdateScheduleResponse;
-import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleRequest;
-import com.scheduleappdevelop2.dto.createSchedule.CreateScheduleResponse;
-import com.scheduleappdevelop2.dto.checkSchedule.ScheduleResponse;
-import com.scheduleappdevelop2.entity.Schedule;
-import com.scheduleappdevelop2.repository.ScheduleRepository;
+import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
+import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
+import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleRequest;
+import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleResponse;
+import com.scheduleappdevelop2.schedule.dto.checkSchedule.ScheduleResponse;
+import com.scheduleappdevelop2.schedule.entity.Schedule;
+import com.scheduleappdevelop2.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,8 +118,9 @@ public class ScheduleService {
     public void deleteSchedule(Long id) {
 
         //데이터베이스 PK와 비교 후 맞으면 엔터티 형태로 가져옴
-        scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 일정이 없습니다."));
+        if(!scheduleRepository.existsById(id)) {
+                throw new IllegalArgumentException("해당 일정이 없습니다.");
+        }
 
         //데이터베이스에서 삭제 하기
         scheduleRepository.deleteById(id);

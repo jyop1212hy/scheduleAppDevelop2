@@ -1,4 +1,4 @@
-package com.scheduleappdevelop2.entity;
+package com.scheduleappdevelop2.schedule.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;
