@@ -2,11 +2,9 @@ package com.scheduleappdevelop2.schedule.dto.createSchedule;
 
 /**
  * CreateScheduleRequest
- * - 일정 생성 시 클라이언트가 보내는 데이터(요청 바디)를 담는 DTO.
- * - title / content / writer 3가지 값만 전달받는다.
- * - 불변 객체로 만들기 위해 모든 필드를 final 로 선언했다.
- * - 생성자를 통해서만 값이 세팅되며, setter는 없다.
- * - 스프링이 JSON 요청 바디를 이 생성자의 파라미터 이름에 맞춰 자동 매핑해준다.
+ * - 일정 생성 시 클라이언트가 보내는 JSON 데이터(요청 바디)를 담는 DTO.
+ * - title, content 2가지만 받으며 로그인 유저 정보는 세션에서 따로 가져온다.
+ * - 불변성을 위해 모든 필드는 final, 생성자를 통해서만 값이 설정된다.
  */
 public class CreateScheduleRequest {
 
@@ -16,22 +14,13 @@ public class CreateScheduleRequest {
     /** 일정 내용 */
     private final String content;
 
-    /** 작성자 */
-    private final String writer;
-
-    /**
-     * 요청 JSON 데이터를 매핑할 생성자
-     * - 스프링이 title, content, writer 값을 여기에 자동으로 넣어준다.
-     * - DTO를 불변으로 유지하기 위해 생성자를 사용한다.
-     */
-    public CreateScheduleRequest(String title, String content, String writer) {
+    /** JSON 요청 값 매핑용 생성자 */
+    public CreateScheduleRequest(String title, String content) {
         this.title = title;
         this.content = content;
-        this.writer = writer;
     }
 
     //getter
     public String getTitle() { return title; }
     public String getContent() { return content; }
-    public String getWriter() { return writer; }
 }

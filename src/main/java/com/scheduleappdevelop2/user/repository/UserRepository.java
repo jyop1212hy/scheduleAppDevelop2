@@ -2,8 +2,6 @@ package com.scheduleappdevelop2.user.repository;
 
 import com.scheduleappdevelop2.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -13,7 +11,6 @@ import java.util.Optional;
  * - 별도 구현 없이 데이터 접근 계층을 구성할 수 있음.
  */
 public interface UserRepository extends JpaRepository<User, Long> {
-
 
     boolean existsByEmail(String email);
 

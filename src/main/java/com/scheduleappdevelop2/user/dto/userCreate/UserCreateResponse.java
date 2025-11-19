@@ -3,6 +3,12 @@ package com.scheduleappdevelop2.user.dto.userCreate;
 import com.scheduleappdevelop2.user.entity.User;
 import java.time.LocalDateTime;
 
+/**
+ * UserCreateResponse
+ * - 회원가입 성공 후 클라이언트에 반환되는 DTO.
+ * - User 엔티티 전체를 노출하지 않고 필요한 필드만 선택해 전달한다.
+ * - 불변 객체로 유지하여 안정성 증가.
+ */
 public class UserCreateResponse {
 
     private final Long id;

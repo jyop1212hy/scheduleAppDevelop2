@@ -7,57 +7,67 @@ import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleRespons
 import com.scheduleappdevelop2.schedule.dto.checkSchedule.ScheduleResponse;
 import com.scheduleappdevelop2.schedule.entity.Schedule;
 import com.scheduleappdevelop2.schedule.repository.ScheduleRepository;
+import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
+import com.scheduleappdevelop2.user.entity.User;
+import com.scheduleappdevelop2.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * ScheduleService
+ * - 일정 생성/조회/수정/삭제에 대한 핵심 비즈니스 로직을 처리한다.
+ * - 일정은 반드시 '작성자(User)'와 연결되며, 수정/삭제 시 작성자 본인인지 검증한다.
+ * - 컨트롤러와 리포지토리 사이에서 도메인 로직을 담당하는 계층이다.
+ */
 @Service
 @RequiredArgsConstructor
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
 
     /**
      * 일정 생성
-     * - 입력값이 비어있지 않은지 먼저 확인한다.
-     * - 문제가 없으면 엔티티 객체를 만든 뒤 DB에 저장한다.
-     * - 저장된 엔티티에서 필요한 정보만 꺼내 DTO로 변환하여 반환한다.
+     * - 입력 데이터(title, content)를 검증한 뒤 DB에 새 일정(Schedule)을 저장한다.
+     * - sessionUser.id로 실제 User 엔티티를 찾아 일정 작성자로 연결한다.
+     * - 저장된 엔티티를 CreateScheduleResponse DTO로 변환해 반환한다.
      */
     @Transactional
-    public CreateScheduleResponse createSchedule(CreateScheduleRequest requestData) {
+    public CreateScheduleResponse createSchedule(CreateScheduleRequest requestData, SessionUser sessionUser) {
 
-        // 1) 요청 데이터 검증 (비어있는 값이 있으면 바로 예외 발생)
+        // 요청 데이터 검증 (비어있는 값이 있으면 바로 예외 발생)
         if (requestData.getTitle() == null || requestData.getTitle().isBlank()) {
             throw new IllegalArgumentException("제목은 필수입니다.");
         }
         if (requestData.getContent() == null || requestData.getContent().isBlank()) {
             throw new IllegalArgumentException("내용은 필수입니다.");
         }
-        if (requestData.getWriter() == null || requestData.getWriter().isBlank()) {
-            throw new IllegalArgumentException("작성자는 필수입니다.");
-        }
 
-        // 2) 엔티티에 데이터 넣기 (of() 사용)
+        // 로그인한 유저 엔티티 조회
+        User user = userRepository.findById(sessionUser.getId())
+                .orElseThrow(()-> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        // 엔티티에 데이터 넣기 (of() 사용)
         Schedule schedule = Schedule.of(
                 requestData.getTitle(),
                 requestData.getContent(),
-                requestData.getWriter()
+                user
         );
 
-        // 3) 엔터티에 넣은 내용 DB에 저장하기
+        // 엔터티에 넣은 내용 DB에 저장하기
         Schedule saved = scheduleRepository.save(schedule);
 
-        // 4) 저장된 엔티티를 DTO로 변환해서 응답
+        // 저장된 엔티티를 DTO로 변환해서 응답
         return CreateScheduleResponse.from(saved);
     }
 
     /**
      * 전체 일정 조회
-     * - DB에서 모든 일정 엔티티를 꺼낸다.
-     * - stream()을 이용해 엔티티 하나씩 DTO로 바꾼다.
-     * - DTO로 바뀐 모든 결과를 리스트 형태로 반환한다.
+     * - 모든 Schedule 엔티티를 가져와 ScheduleResponse DTO 리스트로 변환하여 반환한다.
+     * - 단순 조회 작업이므로 readOnly 속성을 사용해 성능 최적화한다.
      */
     @Transactional(readOnly = true)
     public List<ScheduleResponse> checkAllSchedules() {
@@ -71,41 +81,55 @@ public class ScheduleService {
 
     /**
      * 단일 일정 조회
-     * - id값을 이용해 DB에서 해당 엔티티를 찾는다.
-     * - 엔티티가 존재하지 않으면 예외를 던진다.
-     * - 찾은 엔티티를 DTO로 변환하여 반환한다.
+     * - 일정 id로 특정 엔티티를 조회한다.
+     * - 일정이 존재하지 않으면 예외를 던진다.
+     * - ScheduleResponse DTO로 변환하여 반환한다.
      */
     @Transactional(readOnly = true)
-    public ScheduleResponse checkOneSchedule(Long id) {
+    public ScheduleResponse checkOneSchedule(Long id,  SessionUser sessionUser) {
 
-        // 1) 데이터베이스 PK와 비교 후 맞으면 엔터티 형태로 가져옴
+        // 조회할 일정 조회
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다."));
 
-        // 2) DTO로 전달
+        // 로그인 유저 조회
+        User user = userRepository.findById(sessionUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        // 권한 체크 (본인것만 조회 가능)
+        if(!schedule.getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("본인 일정만 조회할 수 있습니다.");
+        }
+
+        // DTO로 전달
         return ScheduleResponse.from(schedule);
     }
 
     /**
      * 일정 수정
-     * - 먼저 id로 엔티티를 조회한다.
-     * - 존재하지 않으면 예외를 발생시킨다.
-     * - 요청으로 들어온 데이터가 null이 아닌 값만 골라 변경한다.
-     *   (실제 변경 작업은 엔티티의 update() 메서드가 담당)
-     * - 트랜잭션 끝나는 시점에 JPA의 Dirty Checking으로 자동 업데이트된다.
+     * - 수정 대상 일정(id)을 조회한다.
+     * - sessionUser.id로 로그인한 유저를 조회한다.
+     * - 일정 작성자와 로그인 유저가 같은지 검증한다(본인만 수정 가능).
+     * - 엔터티 내부 update() 호출하여 필요한 필드만 변경한다.
+     * - 수정된 엔티티를 DTO(UpdateScheduleResponse)로 반환한다.
      */
     @Transactional
-    public UpdateScheduleResponse updateSchedule(Long id, UpdateScheduleRequest requestData) {
-        if(requestData.getTitle() == null || requestData.getContent() == null || requestData.getWriter() == null) {
-            // 데이터베이스 PK와 비교 후 맞으면 엔터티 형태로 가져옴
-            throw new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다.");
-        }
+    public UpdateScheduleResponse updateSchedule(Long id, UpdateScheduleRequest requestData,SessionUser sessionUser) {
 
-        // 엔티티에게 직접 업데이트 일을 시킨다 (도메인 주도 설계 느낌)
+        // 수정할 일정 조회
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(id + " 의 유저를 찾을 수 없습니다."));
-        schedule.update(requestData.getTitle(), requestData.getContent());
+                .orElseThrow(() -> new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다."));
 
+        // 로그인 유저 조회
+        User user = userRepository.findById(sessionUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        // 권한 체크 (본인만 수정 가능)
+        if(!schedule.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("본인이 작성한 일정만 조회할 수 있습니다.");
+        } else {
+            schedule.update(requestData.getTitle(), requestData.getContent());
+        }
 
         // 변경된 엔티티를 DTO로 만들어 반환
         return UpdateScheduleResponse.from(schedule);
@@ -113,19 +137,29 @@ public class ScheduleService {
 
     /**
      * 일정 삭제
-     * - 삭제하려는 일정이 실제 DB에 존재하는지 먼저 확인한다.
-     * - 존재한다면 deleteById()를 통해 DB에서 삭제한다.
+     * - 삭제 대상 엔티티(id)를 조회한다.
+     * - sessionUser.id로 로그인 유저를 조회한다.
+     * - 본인 일정인지 검증하여 권한을 확인한다.
+     * - 검증 통과 시 DB에서 해당 일정 엔티티를 삭제한다.
      */
     @Transactional
-    public void deleteSchedule(Long id) {
+    public void deleteSchedule(Long id, SessionUser sessionUser) {
 
-        //데이터베이스 PK와 비교 후 맞으면 엔터티 형태로 가져옴
-        if(!scheduleRepository.existsById(id)) {
-                throw new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다.");
+        //데이터베이스 PK와 비교 후 맞으면 스케줄 일정 가저옴
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다."));
+
+        // 로그인한 유저 조회
+        User user = userRepository.findById(sessionUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        // 권한 체크 (본인만 삭제 가능)
+        if(!schedule.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("본인이 작성한 일정만 삭제할 수 있습니다.");
         }
 
         //데이터베이스에서 삭제 하기
-        scheduleRepository.deleteById(id);
+        scheduleRepository.delete(schedule);
     }
 
 }

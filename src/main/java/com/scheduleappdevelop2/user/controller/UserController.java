@@ -8,7 +8,7 @@ import com.scheduleappdevelop2.user.dto.updateUser.UpdateUserResponse;
 import com.scheduleappdevelop2.user.dto.userCreate.UserCreateRequest;
 import com.scheduleappdevelop2.user.dto.userCreate.UserCreateResponse;
 import com.scheduleappdevelop2.user.dto.userResponse.UserResponse;
-import com.scheduleappdevelop2.user.entity.User;
+import com.scheduleappdevelop2.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -22,8 +22,8 @@ import java.util.List;
 /**
  * UserController
  * - /users 로 들어오는 모든 HTTP 요청을 처리하는 컨트롤러.
- * - 클라이언트 요청을 받고, 비즈니스 로직은 Service에게 넘긴다.
- * - 컨트롤러는 "데이터를 받고 → 전달하고 → 돌려주는" 역할만 담당.
+ * - 요청 데이터를 받아 Service에 전달하고, 처리된 결과를 클라이언트에게 반환한다.
+ * - 컨트롤러는 비즈니스 로직 없이 "입력 받고 → 전달하고 → 응답 주는" 역할만 담당한다.
  */
 @RestController
 @RequiredArgsConstructor
@@ -35,13 +35,13 @@ public class UserController {
      * - @RequiredArgsConstructor 덕분에 자동으로 생성자 주입됨.
      * - final 필드여야만 주입 가능 → 안정성 확보.
      */
-    private final com.scheduleappdevelop2.user.service.UserService userService;
+    private final UserService userService;
 
     /**
      * 유저 생성
      * - POST /users
-     * - 요청 바디로 들어온 JSON 데이터를 UserCreateRequest 로 받고,
-     *   Service에 전달하여 생성 작업을 수행한다.
+     * - 요청 바디의 JSON을 UserCreateRequest DTO로 받아 Service로 전달한다.
+     * - 생성된 유저 정보를 DTO 형태로 반환한다.
      */
     @PostMapping
     public UserCreateResponse create(@RequestBody UserCreateRequest requestData) {
@@ -51,7 +51,7 @@ public class UserController {
     /**
      * 모든 유저 조회
      * - GET /users
-     * - DB에 저장된 모든 유저 목록을 반환한다.
+     * - DB에 저장된 전체 유저 리스트를 조회해 반환한다.
      */
     @GetMapping
     public List<UserResponse> findAllUsers() {
@@ -59,9 +59,9 @@ public class UserController {
     }
 
     /**
-     * 특정 유저 조회
+     * 특정 유저 단건 조회
      * - GET /users/{id}
-     * - URL의 {id} 값을 이용해 해당 유저 정보를 가져온다.
+     * - 경로 변수 id로 유저를 조회하여 DTO로 반환한다.
      */
     @GetMapping("/{id}")
     public UserResponse findUser(@PathVariable Long id) {
@@ -69,10 +69,9 @@ public class UserController {
     }
 
     /**
-     * 특정 유저 수정
+     * 유저 정보 수정
      * - PATCH /users/{id}
-     * - 수정하고 싶은 필드만 JSON 으로 전달하면 됨.
-     * - Service에서 엔터티를 수정하고 결과를 반환한다.
+     * - 수정하고 싶은 필드만 담은 DTO를 전달하면 Service에서 엔티티를 갱신한다.
      */
     @PatchMapping("/{id}")
     public UpdateUserResponse update(@PathVariable Long id,
@@ -81,9 +80,9 @@ public class UserController {
     }
 
     /**
-     * 특정 유저 삭제
+     * 유저 삭제
      * - DELETE /users/{id}
-     * - 삭제 완료 후 간단한 메시지를 반환한다.
+     * - 해당 ID의 유저를 삭제하고 간단한 메세지를 반환한다.
      */
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id) {
@@ -92,39 +91,27 @@ public class UserController {
     }
 
     /**
-     * 로그인 요청 처리
-     * - 클라이언트가 보낸 이메일/비밀번호를 검증(@Valid)
-     * - HttpServletRequest는 이후 세션/쿠키 작업 시 사용
+     * 로그인
+     * - POST /users/login
+     * - 이메일/비밀번호를 DTO로 받고, 로그인 성공 시 세션 정보를 생성한다.
+     * - 로그인한 유저의 기본 정보(LoginResponse)를 반환한다.
      */
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody LoginRequest requestData, HttpServletRequest session) {
-
-        //로그인 검증
-        User user = userService.login(requestData);
-
-        //세션 생성 + 사용자 정보 저장;
-        SessionUser sessionUser = new SessionUser(user.getId(), user.getEmail());
-        session.setAttribute("loginUser", sessionUser);
-
-        //응답 DTO 생성
-        LoginResponse response = new LoginResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getCreatedAt(),
-                user.getModifiedAt()
-        );
-
-        return ResponseEntity.ok(response);
+    public LoginResponse login(@Valid @RequestBody LoginRequest requestData, HttpServletRequest httpRequest) {
+        return userService.login(requestData, httpRequest);
     }
 
     /**
      * 로그아웃
-    */
+     * - POST /users/logout
+     * - 세션에 저장된 loginUser 값을 확인하고, 존재하면 세션을 무효화한다.
+     */
      @PostMapping("/logout")
     public ResponseEntity<Void> logout(
              @SessionAttribute(name = "loginUser", required = false)
              SessionUser sessionUser, HttpSession session) {
-         if (sessionUser == null) {
+
+         if(sessionUser == null) {
             return ResponseEntity.badRequest().build();
          }
              session.invalidate();

@@ -6,65 +6,110 @@ import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleRespons
 import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleRequest;
 import com.scheduleappdevelop2.schedule.dto.checkSchedule.ScheduleResponse;
 import com.scheduleappdevelop2.schedule.service.ScheduleService;
+import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * ScheduleController
+ * - /schedules 관련 요청을 처리하는 REST 컨트롤러.
+ * - 일정 생성, 조회, 수정, 삭제에 대한 엔드포인트를 제공한다.
+ * - 세션에서 로그인 유저(SessionUser)를 가져와 권한 기반 요청 처리가 가능하도록 구성한다.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/schedules")
 public class ScheduleController {
 
-    //@RequiredArgsConstructor로 자동생성자를 통해 초기값 설정 가능
     private final ScheduleService scheduleService;
 
     /**
-     * 일정 생성 요청 처리
-     * - 클라이언트가 보낸 JSON 데이터를 DTO로 받는다.
-     * - Service에 전달해 생성 작업을 수행한다.
-     * - 생성된 일정 정보를 그대로 응답한다.
+     * 일정 생성
+     * - 요청 JSON을 DTO(CreateScheduleRequest)로 받아 처리한다.
+     * - 세션에서 로그인 유저의 정보를 조회하여 일정 작성자로 연결한다.
+     * - 생성된 일정 정보를 DTO(CreateScheduleResponse)로 반환한다.
      */
     @PostMapping
-    public CreateScheduleResponse create(@RequestBody CreateScheduleRequest requestData){
-        return scheduleService.createSchedule(requestData);
+    public CreateScheduleResponse create(@RequestBody CreateScheduleRequest requestData, HttpServletRequest servletRequest){
+
+        // 세션에서 로그인 유저 정보 획득
+        SessionUser sessionUser = (SessionUser) servletRequest.getSession(false).getAttribute("loginUser");
+
+        // 서비스에 일정 생성 요청
+        return scheduleService.createSchedule(requestData, sessionUser);
     }
 
     /**
-     * 전체 일정 조회 요청 처리
-     * - 모든 일정 정보를 조회하여 리스트 형태로 반환한다.
+     * 전체 일정 조회
+     * - DB에 존재하는 모든 일정을 조회하여 리스트로 반환한다.
+     * - 조회는 로그인 여부와 상관 없이 가능하도록 설정되어 있다.
      */
     @GetMapping
     public List<ScheduleResponse> checkAll() {
+
+        // 서비스에 일정 조회 요청
         return scheduleService.checkAllSchedules();
     }
 
     /**
-     * 단건 일정 조회 요청 처리
-     * - URL 경로에서 받은 id를 기반으로 특정 일정 정보를 반환한다.
+     * 단일 일정 조회
+     * - URL 경로의 id를 사용하여 특정 일정을 조회한다.
+     * - 단일 조회는 id를 사용함으로 로그인 상태에서만 조회가능 하도록 했다.
+     * - 조회된 일정 정보를 DTO로 변환하여 반환한다.
      */
     @GetMapping("/{id}")
-    public ScheduleResponse checkOne(@PathVariable Long id) {
-        return scheduleService.checkOneSchedule(id);
+    public ScheduleResponse checkOne(@PathVariable Long id, HttpServletRequest servletRequest) {
+
+        // 세션에서 로그인 유저 정보 획득
+        HttpSession session = servletRequest.getSession(false);
+        if (session == null) throw new IllegalStateException("세션 없음!");
+
+        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+
+        // 서비스에 일정 조회 요청
+        return scheduleService.checkOneSchedule(id, sessionUser);
     }
 
     /**
-     * 일정 수정 요청 처리
-     * - 수정하고 싶은 필드만 받아서 전달한다.
-     * - Service에서 엔티티 수정 후 변경된 결과를 반환한다.
+     * 일정 수정
+     * - 수정할 내용(JSON)을 DTO(UpdateScheduleRequest)로 받아 처리한다.
+     * - 세션에서 로그인 유저 정보를 조회하여 해당 사용자가 작성자인지 검증한다.
+     * - 검증 통과 후 일정 수정 결과를 DTO로 반환한다.
      */
     @PatchMapping("/{id}")
-    public UpdateScheduleResponse update(@PathVariable Long id, @RequestBody UpdateScheduleRequest requestData) {
-        return scheduleService.updateSchedule(id, requestData);
+    public UpdateScheduleResponse update(@PathVariable Long id, HttpServletRequest servletRequest, @RequestBody UpdateScheduleRequest requestData) {
+
+        // 세션에서 로그인 유저 정보 획득
+        HttpSession session = servletRequest.getSession(false);
+        if (session == null) throw new IllegalStateException("세션 없음!");
+
+        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+
+        // 서비스에 일정 조회 요청
+        return scheduleService.updateSchedule(id, requestData, sessionUser);
     }
 
     /**
-     * 일정 삭제 요청 처리
-     * - 삭제 성공 시 간단한 메세지를 반환한다.
+     * 일정 삭제
+     * - URL의 id로 삭제 대상 일정을 조회한 후,
+     *   세션의 로그인 유저와 작성자를 비교하여 권한을 체크한다.
+     * - 삭제 성공 시 간단한 응답 메시지를 반환한다.
      */
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
-        scheduleService.deleteSchedule(id);
+    public String delete(@PathVariable Long id, HttpServletRequest servletRequest) {
+
+        // 세션에서 로그인 유저 정보 획득
+        HttpSession session = servletRequest.getSession(false);
+        if (session == null) throw new IllegalStateException("세션 없음!");
+
+        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+        scheduleService.deleteSchedule(id, sessionUser);
+
+        // 서비스에 일정 조회 요청
         return "해당 일정이 삭제 되었습니다.";
     }
 }

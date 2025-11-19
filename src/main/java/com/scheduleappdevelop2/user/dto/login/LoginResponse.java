@@ -5,8 +5,9 @@ import java.time.LocalDateTime;
 
 /**
  * 로그인 성공 후 클라이언트에게 반환되는 응답 DTO
- * - User 엔티티 전체를 노출하지 않고 필요한 정보만 선택해서 제공한다.
- * - 응답 정보는 불변(immutable)하게 유지하여 안정성과 일관성을 높인다.
+ * - 로그인 성공 후 클라이언트에 전달되는 응답 DTO.
+ * - User 엔티티에서 필요한 정보만 추출하여 반환한다.
+ * - 불변 객체로 구성하여 응답의 안정성을 유지한다.
  */
 public class LoginResponse {
 

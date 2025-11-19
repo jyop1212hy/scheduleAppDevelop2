@@ -9,8 +9,10 @@ import static lombok.AccessLevel.PROTECTED;
 
 /**
  * User 엔티티
- * - 회원 정보를 담는 테이블(users)과 매핑된다.
- * - JPA로 관리되는 진짜 도메인 객체.
+ * - 회원 정보(users 테이블)와 매핑되는 도메인 객체.
+ * - 이름, 이메일, 비밀번호 같은 핵심 데이터와
+ *   생성/수정 시간(BaseTimeEntity)을 함께 관리한다.
+ * - JPA가 관리하며, 서비스 계층에서 비즈니스 로직을 처리할 때 사용된다.
  */
 @Entity
 @Table(name = "users")
@@ -50,8 +52,8 @@ public class User extends BaseTimeEntity {
     private String password;
 
     /**
-     * 실제 개발자가 사용할 생성자
-     * - Builder 패턴으로만 생성되도록 제한
+     * 엔티티 생성용 생성자
+     * - Builder 로만 객체가 생성되도록 제한하여 안정성을 높인다.
      */
     @Builder
     private User(String name, String email, String password) {
@@ -61,8 +63,9 @@ public class User extends BaseTimeEntity {
     }
 
     /**
-     * 정적 팩토리 메서드
-     * - User 객체 생성 시 안정적인 생성 경로 제공
+     * 유저 정보 수정
+     * - null 아닌 값만 골라 엔티티 상태를 갱신한다.
+     * - 변경 후 트랜잭션 종료 시 자동으로 DB에 반영된다 (Dirty Checking).
      */
     public static User of(String name, String email, String password){
         return User.builder()
@@ -74,8 +77,8 @@ public class User extends BaseTimeEntity {
 
     /**
      * 유저 정보 수정
-     * - 전달된 값이 null이 아닐 때만 필드를 변경
-     * - Dirty Checking으로 트랜잭션 종료 시 DB 반영
+     * - null 아닌 값만 골라 엔티티 상태를 갱신한다.
+     * - 변경 후 트랜잭션 종료 시 자동으로 DB에 반영된다 (Dirty Checking).
      */
     public void update(String name, String email) {
         if(name != null) {this.name = name; }

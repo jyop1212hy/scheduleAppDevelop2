@@ -3,6 +3,11 @@ package com.scheduleappdevelop2.user.dto.userResponse;
 import com.scheduleappdevelop2.user.entity.User;
 import java.time.LocalDateTime;
 
+/**
+ * UserResponse
+ * - 유저 조회 시 클라이언트에게 전달되는 DTO.
+ * - User 엔티티를 그대로 노출하지 않고 안전하게 필요한 정보만 반환한다.
+ */
 public class UserResponse {
 
     private final Long id;

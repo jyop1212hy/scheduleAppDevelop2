@@ -2,6 +2,7 @@ package com.scheduleappdevelop2.global.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
@@ -11,27 +12,32 @@ public class AuthFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        HttpServletRequest httpReq = (HttpServletRequest) request;
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        String uri = httpReq.getRequestURI();
+        String uri = httpRequest.getRequestURI();
+        String method = httpRequest.getMethod();
 
-        // 인증 예외 경로 (로그인/회원가입)
-        if (uri.startsWith("/users/login") || uri.startsWith("/users/signup")) {
+        // ===== 예외 처리 경로 =====
+        boolean isLogin = uri.equals("/users/login") && method.equals("POST");
+        boolean isSignup = uri.equals("/users") && method.equals("POST");
+        boolean isUserRead = uri.startsWith("/users") && method.equals("GET");
+        boolean isScheduleRead = uri.startsWith("/schedules") && method.equals("GET");
+
+        if (isLogin || isSignup || isUserRead || isScheduleRead) {
             chain.doFilter(request, response);
             return;
         }
 
-        // 세션 확인
-        HttpSession session = httpReq.getSession(false);
-
-        if (session == null || session.getAttribute("user") == null) {
-            response.setContentType("application/json");
-            response.getWriter().write("{\"message\": \"로그인이 필요합니다.\"}");
-            ((jakarta.servlet.http.HttpServletResponse) response).setStatus(401);
+        // ===== 세션 검사 =====
+        HttpSession session = httpRequest.getSession(false);
+        if (session == null || session.getAttribute("loginUser") == null) {
+            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            httpResponse.getWriter().write("로그인이 필요합니다.");
             return;
         }
 
-        // 통과
+        // 인증 성공 → 다음으로 진행
         chain.doFilter(request, response);
     }
 }

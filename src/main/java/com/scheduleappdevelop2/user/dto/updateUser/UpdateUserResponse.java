@@ -3,6 +3,11 @@ package com.scheduleappdevelop2.user.dto.updateUser;
 import com.scheduleappdevelop2.user.entity.User;
 import java.time.LocalDateTime;
 
+/**
+ * UpdateUserResponse
+ * - 유저 정보 수정 후 클라이언트에 반환되는 DTO.
+ * - 수정된 엔티티에서 필요한 필드만 추출해 응답한다.
+ */
 public class UpdateUserResponse {
 
     private final Long id;
