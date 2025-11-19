@@ -1,12 +1,20 @@
 package com.scheduleappdevelop2.user.controller;
 
-
+import com.scheduleappdevelop2.user.dto.login.LoginRequest;
+import com.scheduleappdevelop2.user.dto.login.LoginResponse;
+import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
 import com.scheduleappdevelop2.user.dto.updateUser.UpdateUserRequest;
 import com.scheduleappdevelop2.user.dto.updateUser.UpdateUserResponse;
 import com.scheduleappdevelop2.user.dto.userCreate.UserCreateRequest;
 import com.scheduleappdevelop2.user.dto.userCreate.UserCreateResponse;
 import com.scheduleappdevelop2.user.dto.userResponse.UserResponse;
+import com.scheduleappdevelop2.user.entity.User;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -82,4 +90,44 @@ public class UserController {
         userService.deleteUser(id);
         return "해당 유저가 삭제 되었습니다.";
     }
+
+    /**
+     * 로그인 요청 처리
+     * - 클라이언트가 보낸 이메일/비밀번호를 검증(@Valid)
+     * - HttpServletRequest는 이후 세션/쿠키 작업 시 사용
+     */
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest requestData, HttpServletRequest session) {
+
+        //로그인 검증
+        User user = userService.login(requestData);
+
+        //세션 생성 + 사용자 정보 저장;
+        SessionUser sessionUser = new SessionUser(user.getId(), user.getEmail());
+        session.setAttribute("loginUser", sessionUser);
+
+        //응답 DTO 생성
+        LoginResponse response = new LoginResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getCreatedAt(),
+                user.getModifiedAt()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 로그아웃
+    */
+     @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+             @SessionAttribute(name = "loginUser", required = false)
+             SessionUser sessionUser, HttpSession session) {
+         if (sessionUser == null) {
+            return ResponseEntity.badRequest().build();
+         }
+             session.invalidate();
+             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+     }
 }

@@ -46,7 +46,7 @@ public class User extends BaseTimeEntity {
      * - 필수값, 최대 16자
      * - 중복 허용
      */
-    @Column(length = 50, nullable = false)
+    @Column(length = 100, nullable = false)
     private String password;
 
     /**
