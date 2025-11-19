@@ -1,5 +1,7 @@
 package com.scheduleappdevelop2.schedule.service;
 
+import com.scheduleappdevelop2.global.exception.ScheduleNotFoundException;
+import com.scheduleappdevelop2.global.exception.UserNotFoundException;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
 import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleRequest;
@@ -48,7 +50,7 @@ public class ScheduleService {
 
         // 로그인한 유저 엔티티 조회
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(()-> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(()-> new UserNotFoundException(sessionUser.getId()));
 
         // 엔티티에 데이터 넣기 (of() 사용)
         Schedule schedule = Schedule.of(
@@ -90,11 +92,11 @@ public class ScheduleService {
 
         // 조회할 일정 조회
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다."));
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
 
         // 로그인 유저 조회
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(sessionUser.getId()));
 
         // 권한 체크 (본인것만 조회 가능)
         if(!schedule.getUser().getId().equals(user.getId())) {
@@ -118,11 +120,11 @@ public class ScheduleService {
 
         // 수정할 일정 조회
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다."));
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
 
         // 로그인 유저 조회
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(sessionUser.getId()));
 
         // 권한 체크 (본인만 수정 가능)
         if(!schedule.getUser().getId().equals(user.getId())) {
@@ -147,11 +149,11 @@ public class ScheduleService {
 
         //데이터베이스 PK와 비교 후 맞으면 스케줄 일정 가저옴
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("입력한 " + id + "의 일정이 없습니다."));
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
 
         // 로그인한 유저 조회
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(sessionUser.getId()));
 
         // 권한 체크 (본인만 삭제 가능)
         if(!schedule.getUser().getId().equals(user.getId())) {

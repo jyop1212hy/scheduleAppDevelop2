@@ -1,5 +1,7 @@
 package com.scheduleappdevelop2.user.service;
 
+import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
+import com.scheduleappdevelop2.global.exception.UserNotFoundException;
 import com.scheduleappdevelop2.user.dto.login.LoginResponse;
 import com.scheduleappdevelop2.user.dto.login.LoginRequest;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
@@ -89,11 +91,17 @@ public class UserService {
      * - 조회된 엔티티를 DTO로 변환해 반환한다.
      */
     @Transactional(readOnly = true)
-    public UserResponse checkOneUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+    public UserResponse checkOneUser(Long id, SessionUser sessionUser) {
 
-        return UserResponse.from(user);
+        // 조회할 유저 조회
+        User oneUser = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        if (!oneUser.getId().equals(sessionUser.getId())) {
+            throw new UnauthorizedUserAccessException(id);
+        }
+
+        return UserResponse.from(oneUser);
     }
 
     /**
@@ -102,16 +110,21 @@ public class UserService {
      * - 엔티티 수정 후 UpdateUserResponse DTO로 변환하여 반환한다.
      */
     @Transactional
-    public UpdateUserResponse updateUser(Long id, UpdateUserRequest requestData) {
+    public UpdateUserResponse updateUser(Long id, UpdateUserRequest requestData, SessionUser sessionUser) {
+
+        // 엔티티 조회
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        //로그인 세션 조회
+        if(!user.getId().equals(sessionUser.getId())) {
+            throw new UnauthorizedUserAccessException(sessionUser.getId());
+        }
 
         // 요청 데이터 확인
         if(requestData.getName() == null || requestData.getEmail() == null) {
             throw new IllegalArgumentException("수정할 데이터가 없습니다.");
         }
-
-        // 엔티티 조회
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(id + " 의 유저를 찾을 수 없습니다."));
 
         // 엔티티에게 값 변경 명령
         user.update(requestData.getName(), requestData.getEmail());
@@ -126,15 +139,19 @@ public class UserService {
      * - 삭제 실패 시 예외를 발생시킨다.
      */
     @Transactional
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, SessionUser sessionUser) {
 
-        // 존재 확인
-        if(!userRepository.existsById(id)) {
-            throw new IllegalArgumentException(id + " 의 유저를 찾을 수 없습니다.");
+        // 엔티티 조회
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        //로그인 세션 조회
+        if(!user.getId().equals(sessionUser.getId())) {
+            throw new UnauthorizedUserAccessException(sessionUser.getId());
         }
 
         // 삭제
-        userRepository.deleteById(id);
+        userRepository.deleteById(sessionUser.getId());
     }
 
     /**
@@ -144,7 +161,7 @@ public class UserService {
      * - 이후 로그인한 사용자의 기본 정보를 LoginResponse로 반환한다.
      */
     @Transactional
-    public LoginResponse login(LoginRequest requestData, HttpServletRequest request) {
+    public LoginResponse login(LoginRequest requestData, HttpServletRequest httpRequest) {
 
         // 1) 이메일 입력값 검증
         // - 이메일이 null이거나 비어 있으면 아예 로그인 시도 자체가 불가능하므로 즉시 예외 처리.
@@ -174,13 +191,12 @@ public class UserService {
         // 5) 이메일과 비밀번호가 모두 일치했으므로 로그인 성공
         // - 세션 객체를 가져오고(true: 세션 없으면 새로 생성)
         // - 로그인한 사용자 정보를 세션에 저장 (로그인 유지 목적)
-        HttpSession session = request.getSession(true);
+        HttpSession session = httpRequest.getSession(true);
         SessionUser sessionUser = new SessionUser(user.getId(), user.getEmail());
         session.setAttribute("loginUser", sessionUser);
 
         // 6) 컨트롤러로 반환할 로그인 정보 DTO 생성 후 반환
         return LoginResponse.from(user);
     }
-
 
 }

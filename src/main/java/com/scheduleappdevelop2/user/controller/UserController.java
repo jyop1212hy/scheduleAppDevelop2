@@ -1,5 +1,7 @@
 package com.scheduleappdevelop2.user.controller;
 
+import com.scheduleappdevelop2.global.exception.NotLoggedInException;
+import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
 import com.scheduleappdevelop2.user.dto.login.LoginRequest;
 import com.scheduleappdevelop2.user.dto.login.LoginResponse;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
@@ -55,6 +57,8 @@ public class UserController {
      */
     @GetMapping
     public List<UserResponse> findAllUsers() {
+
+        // 서비스에 유저 전체 조회 요청
         return userService.checkAllUser();
     }
 
@@ -64,8 +68,21 @@ public class UserController {
      * - 경로 변수 id로 유저를 조회하여 DTO로 반환한다.
      */
     @GetMapping("/{id}")
-    public UserResponse findUser(@PathVariable Long id) {
-        return userService.checkOneUser(id);
+    public UserResponse findUser(@PathVariable Long id, HttpServletRequest sessionRequest) {
+
+        // 세션에서 로그인 유저 정보 획득
+        HttpSession session = sessionRequest.getSession(false);
+        if (session == null) throw new NotLoggedInException();
+
+        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+        if (sessionUser == null) throw new NotLoggedInException();
+
+        // 본인 아닌 다른 사람 조회 금지
+        if (!sessionUser.getId().equals(id)) {
+            throw new UnauthorizedUserAccessException(id);
+        }
+
+        return userService.checkOneUser(id,sessionUser);
     }
 
     /**
@@ -74,9 +91,19 @@ public class UserController {
      * - 수정하고 싶은 필드만 담은 DTO를 전달하면 Service에서 엔티티를 갱신한다.
      */
     @PatchMapping("/{id}")
-    public UpdateUserResponse update(@PathVariable Long id,
+    public UpdateUserResponse update(@PathVariable Long id, HttpServletRequest sessionRequest,
                                      @RequestBody UpdateUserRequest requestData) {
-        return userService.updateUser(id, requestData);
+        HttpSession session = sessionRequest.getSession(false);
+        if (session == null) throw new NotLoggedInException();
+
+        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+        if (sessionUser == null) throw new NotLoggedInException();
+
+        if (!sessionUser.getId().equals(id)) {
+            throw new UnauthorizedUserAccessException(id);
+        }
+
+        return userService.updateUser(id, requestData, sessionUser);
     }
 
     /**
@@ -85,8 +112,19 @@ public class UserController {
      * - 해당 ID의 유저를 삭제하고 간단한 메세지를 반환한다.
      */
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public String delete(@PathVariable Long id, HttpServletRequest sessionRequest) {
+
+        HttpSession session = sessionRequest.getSession(false);
+        if (session == null) throw new NotLoggedInException();
+
+        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+        if (sessionUser == null) throw new NotLoggedInException();
+
+        if (!sessionUser.getId().equals(id)) {
+            throw new UnauthorizedUserAccessException(id);
+        }
+
+        userService.deleteUser(id, sessionUser);
         return "해당 유저가 삭제 되었습니다.";
     }
 

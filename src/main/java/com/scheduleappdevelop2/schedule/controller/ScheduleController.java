@@ -1,5 +1,7 @@
 package com.scheduleappdevelop2.schedule.controller;
 
+import com.scheduleappdevelop2.global.exception.NotLoggedInException;
+import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
 import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleResponse;
@@ -13,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 /**
  * ScheduleController
@@ -34,10 +38,14 @@ public class ScheduleController {
      * - 생성된 일정 정보를 DTO(CreateScheduleResponse)로 반환한다.
      */
     @PostMapping
-    public CreateScheduleResponse create(@RequestBody CreateScheduleRequest requestData, HttpServletRequest servletRequest){
+    public CreateScheduleResponse create(@RequestBody CreateScheduleRequest requestData, HttpServletRequest sessionRequest){
 
         // 세션에서 로그인 유저 정보 획득
-        SessionUser sessionUser = (SessionUser) servletRequest.getSession(false).getAttribute("loginUser");
+        HttpSession session = sessionRequest.getSession(false);
+        if (session == null) throw new NotLoggedInException();
+
+        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+        if (sessionUser == null) throw new NotLoggedInException();
 
         // 서비스에 일정 생성 요청
         return scheduleService.createSchedule(requestData, sessionUser);
@@ -51,7 +59,7 @@ public class ScheduleController {
     @GetMapping
     public List<ScheduleResponse> checkAll() {
 
-        // 서비스에 일정 조회 요청
+        // 서비스에 일정 전체 조회 요청
         return scheduleService.checkAllSchedules();
     }
 
@@ -62,13 +70,14 @@ public class ScheduleController {
      * - 조회된 일정 정보를 DTO로 변환하여 반환한다.
      */
     @GetMapping("/{id}")
-    public ScheduleResponse checkOne(@PathVariable Long id, HttpServletRequest servletRequest) {
+    public ScheduleResponse checkOne(@PathVariable Long id, HttpServletRequest sessionRequest) {
 
         // 세션에서 로그인 유저 정보 획득
-        HttpSession session = servletRequest.getSession(false);
-        if (session == null) throw new IllegalStateException("세션 없음!");
+        HttpSession session = sessionRequest.getSession(false);
+        if (session == null) throw new NotLoggedInException();
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+        if (sessionUser == null) throw new NotLoggedInException();
 
         // 서비스에 일정 조회 요청
         return scheduleService.checkOneSchedule(id, sessionUser);
@@ -81,13 +90,15 @@ public class ScheduleController {
      * - 검증 통과 후 일정 수정 결과를 DTO로 반환한다.
      */
     @PatchMapping("/{id}")
-    public UpdateScheduleResponse update(@PathVariable Long id, HttpServletRequest servletRequest, @RequestBody UpdateScheduleRequest requestData) {
+    public UpdateScheduleResponse update(@PathVariable Long id, HttpServletRequest sessionRequest,
+                                         @RequestBody UpdateScheduleRequest requestData) {
 
         // 세션에서 로그인 유저 정보 획득
-        HttpSession session = servletRequest.getSession(false);
-        if (session == null) throw new IllegalStateException("세션 없음!");
+        HttpSession session = sessionRequest.getSession(false);
+        if (session == null) throw new NotLoggedInException();
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+        if (sessionUser == null) throw new NotLoggedInException();
 
         // 서비스에 일정 조회 요청
         return scheduleService.updateSchedule(id, requestData, sessionUser);
@@ -100,13 +111,15 @@ public class ScheduleController {
      * - 삭제 성공 시 간단한 응답 메시지를 반환한다.
      */
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id, HttpServletRequest servletRequest) {
+    public String delete(@PathVariable Long id, HttpServletRequest sessionRequest) {
 
         // 세션에서 로그인 유저 정보 획득
-        HttpSession session = servletRequest.getSession(false);
-        if (session == null) throw new IllegalStateException("세션 없음!");
+        HttpSession session = sessionRequest.getSession(false);
+        if (session == null) throw new NotLoggedInException();
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
+        if (sessionUser == null) throw new NotLoggedInException();
+
         scheduleService.deleteSchedule(id, sessionUser);
 
         // 서비스에 일정 조회 요청

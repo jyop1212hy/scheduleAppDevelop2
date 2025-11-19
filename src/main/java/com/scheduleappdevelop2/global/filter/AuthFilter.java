@@ -21,10 +21,9 @@ public class AuthFilter implements Filter {
         // ===== 예외 처리 경로 =====
         boolean isLogin = uri.equals("/users/login") && method.equals("POST");
         boolean isSignup = uri.equals("/users") && method.equals("POST");
-        boolean isUserRead = uri.startsWith("/users") && method.equals("GET");
         boolean isScheduleRead = uri.startsWith("/schedules") && method.equals("GET");
 
-        if (isLogin || isSignup || isUserRead || isScheduleRead) {
+        if (isLogin || isSignup || isScheduleRead) {
             chain.doFilter(request, response);
             return;
         }
