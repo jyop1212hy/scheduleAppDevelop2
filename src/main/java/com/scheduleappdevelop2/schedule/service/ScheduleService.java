@@ -1,6 +1,7 @@
 package com.scheduleappdevelop2.schedule.service;
 
 import com.scheduleappdevelop2.global.exception.ScheduleNotFoundException;
+import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
 import com.scheduleappdevelop2.global.exception.UserNotFoundException;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
@@ -128,7 +129,7 @@ public class ScheduleService {
 
         // 권한 체크 (본인만 수정 가능)
         if(!schedule.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("본인이 작성한 일정만 조회할 수 있습니다.");
+            throw new UnauthorizedUserAccessException(user.getId());
         } else {
             schedule.update(requestData.getTitle(), requestData.getContent());
         }

@@ -32,6 +32,8 @@ public class AuthFilter implements Filter {
         HttpSession session = httpRequest.getSession(false);
         if (session == null || session.getAttribute("loginUser") == null) {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
             httpResponse.getWriter().write("로그인이 필요합니다.");
             return;
         }

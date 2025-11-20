@@ -1,5 +1,6 @@
 package com.scheduleappdevelop2.user.service;
 
+import com.scheduleappdevelop2.global.config.PasswordEncoder;
 import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
 import com.scheduleappdevelop2.global.exception.UserNotFoundException;
 import com.scheduleappdevelop2.user.dto.login.LoginResponse;
@@ -31,6 +32,7 @@ public class UserService {
 
     /** 의존성 주입 */
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 유저 생성
@@ -59,10 +61,12 @@ public class UserService {
         }
 
         // DTO → 엔터티 변환 (정적 팩토리 메서드 사용)
+        String encodedPassword = passwordEncoder.encode(requestData.getPassword());
+
         User user = User.of(
                 requestData.getName(),
                 requestData.getEmail(),
-                requestData.getPassword()
+                encodedPassword
         );
 
         // 엔터티 저장
@@ -122,7 +126,7 @@ public class UserService {
         }
 
         // 요청 데이터 확인
-        if(requestData.getName() == null || requestData.getEmail() == null) {
+        if(requestData.getName() == null && requestData.getEmail() == null) {
             throw new IllegalArgumentException("수정할 데이터가 없습니다.");
         }
 
@@ -151,7 +155,7 @@ public class UserService {
         }
 
         // 삭제
-        userRepository.deleteById(sessionUser.getId());
+        userRepository.deleteById(id);
     }
 
     /**
@@ -184,8 +188,8 @@ public class UserService {
         // - user.getPassword() : DB에 저장된 비밀번호
         // - requestData.getPassword() : 사용자가 입력한 비밀번호
         // - 두 값이 다르면 예외 발생 (로그인 실패)
-        if(!user.getPassword().equals(requestData.getPassword())) {
-                throw new IllegalArgumentException("해당 이메일이 존재하지 않습니다.");
+        if(!passwordEncoder.matches(requestData.getPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("올바른 비밀번호를 입력하세요..");
         }
 
         // 5) 이메일과 비밀번호가 모두 일치했으므로 로그인 성공

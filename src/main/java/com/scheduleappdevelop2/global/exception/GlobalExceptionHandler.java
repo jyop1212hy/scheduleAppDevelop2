@@ -13,7 +13,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException error) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body("잘못된 요청입니다: " + error.getMessage());
+                .body("[잘못된 요청] " + error.getMessage());
     }
 
     // 상태 관련 문제(로그인 안됨/권한 없음 등) : 403
@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleIllegalStateException(IllegalStateException error) {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body("권한이 없습니다:" + error.getMessage());
+                .body("[권한 문제] " + error.getMessage());
     }
 
     // ====== 커스텀 예외 ======

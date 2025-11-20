@@ -1,7 +1,6 @@
 package com.scheduleappdevelop2.schedule.controller;
 
 import com.scheduleappdevelop2.global.exception.NotLoggedInException;
-import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
 import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleResponse;
@@ -15,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 /**
  * ScheduleController

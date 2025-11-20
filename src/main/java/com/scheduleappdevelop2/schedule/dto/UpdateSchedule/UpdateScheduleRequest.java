@@ -22,5 +22,3 @@ public class UpdateScheduleRequest {
     public String getTitle() { return title; }
     public String getContent() { return content; }
 }
-
-
