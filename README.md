@@ -1,7 +1,7 @@
 
 ---
 
-# 📌 README.md (미니멀 + 깔끔 버전)
+# 📌 README.md
 
 ````md
 # 📅 Schedule App Develop
