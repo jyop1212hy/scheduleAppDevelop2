@@ -45,7 +45,7 @@ public class ScheduleController {
         if (session == null) throw new CustomException(NOT_AUTHENTICATED);
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new CustomException(ErrorMessage.NOT_AUTHENTICATED);
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         // 서비스에 일정 생성 요청
         return scheduleService.createSchedule(requestData, sessionUser);
@@ -74,10 +74,10 @@ public class ScheduleController {
 
         // 세션에서 로그인 유저 정보 획득
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new CustomException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new CustomException();
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         // 서비스에 일정 조회 요청
         return scheduleService.checkOneSchedule(id, sessionUser);
