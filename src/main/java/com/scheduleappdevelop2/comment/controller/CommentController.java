@@ -3,7 +3,7 @@ package com.scheduleappdevelop2.comment.controller;
 import com.scheduleappdevelop2.comment.dto.CommentCreateRequest;
 import com.scheduleappdevelop2.comment.dto.CommentResponse;
 import com.scheduleappdevelop2.comment.service.CommentService;
-import com.scheduleappdevelop2.global.exception.NotLoggedInException;
+import com.scheduleappdevelop2.global.exception.CustomException;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -27,10 +27,10 @@ public class CommentController {
             HttpServletRequest sessionRequest) {
 
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException();
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException();
 
         return commentService.createComment(scheduleId, request, sessionUser);
     }
@@ -50,9 +50,9 @@ public class CommentController {
             HttpServletRequest sessionRequest) {
 
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException();
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException();
 
         return commentService.updateComment(commentId, request, sessionUser);
     }
@@ -65,9 +65,9 @@ public class CommentController {
             HttpServletRequest sessionRequest) {
 
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException();
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException();
 
         commentService.deleteComment(commentId, sessionUser);
         return "댓글이 삭제되었습니다.";

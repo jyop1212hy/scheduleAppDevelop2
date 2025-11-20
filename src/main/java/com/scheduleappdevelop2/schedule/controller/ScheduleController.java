@@ -1,6 +1,7 @@
 package com.scheduleappdevelop2.schedule.controller;
 
-import com.scheduleappdevelop2.global.exception.NotLoggedInException;
+import com.scheduleappdevelop2.global.exception.CustomException;
+import com.scheduleappdevelop2.global.exception.ErrorMessage;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
 import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleResponse;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.scheduleappdevelop2.global.exception.ErrorMessage.NOT_AUTHENTICATED;
 
 /**
  * ScheduleController
@@ -39,10 +42,10 @@ public class ScheduleController {
 
         // 세션에서 로그인 유저 정보 획득
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException(ErrorMessage.NOT_AUTHENTICATED);
 
         // 서비스에 일정 생성 요청
         return scheduleService.createSchedule(requestData, sessionUser);
@@ -71,10 +74,10 @@ public class ScheduleController {
 
         // 세션에서 로그인 유저 정보 획득
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException();
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException();
 
         // 서비스에 일정 조회 요청
         return scheduleService.checkOneSchedule(id, sessionUser);
@@ -92,10 +95,10 @@ public class ScheduleController {
 
         // 세션에서 로그인 유저 정보 획득
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         // 서비스에 일정 조회 요청
         return scheduleService.updateSchedule(id, requestData, sessionUser);
@@ -105,6 +108,7 @@ public class ScheduleController {
      * 일정 삭제
      * - URL의 id로 삭제 대상 일정을 조회한 후,
      *   세션의 로그인 유저와 작성자를 비교하여 권한을 체크한다.
+     *
      * - 삭제 성공 시 간단한 응답 메시지를 반환한다.
      */
     @DeleteMapping("/{id}")
@@ -112,10 +116,10 @@ public class ScheduleController {
 
         // 세션에서 로그인 유저 정보 획득
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         scheduleService.deleteSchedule(id, sessionUser);
 

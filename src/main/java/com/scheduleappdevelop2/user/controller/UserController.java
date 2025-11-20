@@ -1,7 +1,6 @@
 package com.scheduleappdevelop2.user.controller;
 
-import com.scheduleappdevelop2.global.exception.NotLoggedInException;
-import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
+import com.scheduleappdevelop2.global.exception.CustomException;
 import com.scheduleappdevelop2.user.dto.login.LoginRequest;
 import com.scheduleappdevelop2.user.dto.login.LoginResponse;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
@@ -20,6 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.scheduleappdevelop2.global.exception.ErrorMessage.NOT_AUTHENTICATED;
+import static com.scheduleappdevelop2.global.exception.ErrorMessage.NOT_VALID_OWNER;
 
 /**
  * UserController
@@ -72,14 +74,14 @@ public class UserController {
 
         // 세션에서 로그인 유저 정보 획득
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         // 본인 아닌 다른 사람 조회 금지
         if (!sessionUser.getId().equals(id)) {
-            throw new UnauthorizedUserAccessException(id);
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         return userService.checkOneUser(id,sessionUser);
@@ -94,13 +96,14 @@ public class UserController {
     public UpdateUserResponse update(@PathVariable Long id, HttpServletRequest sessionRequest,
                                      @RequestBody UpdateUserRequest requestData) {
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
+
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         if (!sessionUser.getId().equals(id)) {
-            throw new UnauthorizedUserAccessException(id);
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         return userService.updateUser(id, requestData, sessionUser);
@@ -115,13 +118,13 @@ public class UserController {
     public String delete(@PathVariable Long id, HttpServletRequest sessionRequest) {
 
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new NotLoggedInException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new NotLoggedInException();
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         if (!sessionUser.getId().equals(id)) {
-            throw new UnauthorizedUserAccessException(id);
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         userService.deleteUser(id, sessionUser);

@@ -1,8 +1,6 @@
 package com.scheduleappdevelop2.schedule.service;
 
-import com.scheduleappdevelop2.global.exception.ScheduleNotFoundException;
-import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
-import com.scheduleappdevelop2.global.exception.UserNotFoundException;
+import com.scheduleappdevelop2.global.exception.CustomException;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
 import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleRequest;
@@ -18,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.scheduleappdevelop2.global.exception.ErrorMessage.*;
 
 /**
  * ScheduleService
@@ -43,15 +43,15 @@ public class ScheduleService {
 
         // 요청 데이터 검증 (비어있는 값이 있으면 바로 예외 발생)
         if (requestData.getTitle() == null || requestData.getTitle().isBlank()) {
-            throw new IllegalArgumentException("제목은 필수입니다.");
+            throw new CustomException(INVALID_INPUT);
         }
         if (requestData.getContent() == null || requestData.getContent().isBlank()) {
-            throw new IllegalArgumentException("내용은 필수입니다.");
+            throw new CustomException(INVALID_INPUT);
         }
 
         // 로그인한 유저 엔티티 조회
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(()-> new UserNotFoundException(sessionUser.getId()));
+                .orElseThrow(()-> new CustomException(DATA_NOT_FOUND));
 
         // 엔티티에 데이터 넣기 (of() 사용)
         Schedule schedule = Schedule.of(
@@ -93,15 +93,15 @@ public class ScheduleService {
 
         // 조회할 일정 조회
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new ScheduleNotFoundException(id));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_SCHEDULE));
 
         // 로그인 유저 조회
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(() -> new UserNotFoundException(sessionUser.getId()));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         // 권한 체크 (본인것만 조회 가능)
         if(!schedule.getUser().getId().equals(user.getId())) {
-            throw new IllegalStateException("본인 일정만 조회할 수 있습니다.");
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         // DTO로 전달
@@ -121,15 +121,15 @@ public class ScheduleService {
 
         // 수정할 일정 조회
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new ScheduleNotFoundException(id));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_SCHEDULE));
 
         // 로그인 유저 조회
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(() -> new UserNotFoundException(sessionUser.getId()));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         // 권한 체크 (본인만 수정 가능)
         if(!schedule.getUser().getId().equals(user.getId())) {
-            throw new UnauthorizedUserAccessException(user.getId());
+            throw new CustomException(NOT_VALID_OWNER);
         } else {
             schedule.update(requestData.getTitle(), requestData.getContent());
         }
@@ -150,15 +150,15 @@ public class ScheduleService {
 
         //데이터베이스 PK와 비교 후 맞으면 스케줄 일정 가저옴
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new ScheduleNotFoundException(id));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_SCHEDULE));
 
         // 로그인한 유저 조회
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(() -> new UserNotFoundException(sessionUser.getId()));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         // 권한 체크 (본인만 삭제 가능)
         if(!schedule.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("본인이 작성한 일정만 삭제할 수 있습니다.");
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         //데이터베이스에서 삭제 하기

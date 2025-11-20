@@ -1,8 +1,7 @@
 package com.scheduleappdevelop2.user.service;
 
 import com.scheduleappdevelop2.global.config.PasswordEncoder;
-import com.scheduleappdevelop2.global.exception.UnauthorizedUserAccessException;
-import com.scheduleappdevelop2.global.exception.UserNotFoundException;
+import com.scheduleappdevelop2.global.exception.CustomException;
 import com.scheduleappdevelop2.user.dto.login.LoginResponse;
 import com.scheduleappdevelop2.user.dto.login.LoginRequest;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
@@ -19,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+
+import static com.scheduleappdevelop2.global.exception.ErrorMessage.*;
 
 /**
  * UserService
@@ -57,7 +58,7 @@ public class UserService {
         }
         // 이메일 중복 검사
         if(userRepository.existsByEmail(requestData.getEmail())) {
-            throw new IllegalArgumentException("중복된 이메일 입니다.");
+            throw new CustomException(DUPLICATE_EMAIL);
         }
 
         // DTO → 엔터티 변환 (정적 팩토리 메서드 사용)
@@ -99,10 +100,10 @@ public class UserService {
 
         // 조회할 유저 조회
         User oneUser = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         if (!oneUser.getId().equals(sessionUser.getId())) {
-            throw new UnauthorizedUserAccessException(id);
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         return UserResponse.from(oneUser);
@@ -118,16 +119,16 @@ public class UserService {
 
         // 엔티티 조회
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         //로그인 세션 조회
         if(!user.getId().equals(sessionUser.getId())) {
-            throw new UnauthorizedUserAccessException(sessionUser.getId());
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         // 요청 데이터 확인
         if(requestData.getName() == null && requestData.getEmail() == null) {
-            throw new IllegalArgumentException("수정할 데이터가 없습니다.");
+            throw new CustomException(DATA_NOT_FOUND);
         }
 
         // 엔티티에게 값 변경 명령
@@ -147,11 +148,11 @@ public class UserService {
 
         // 엔티티 조회
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         //로그인 세션 조회
         if(!user.getId().equals(sessionUser.getId())) {
-            throw new UnauthorizedUserAccessException(sessionUser.getId());
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         // 삭제
@@ -170,26 +171,26 @@ public class UserService {
         // 1) 이메일 입력값 검증
         // - 이메일이 null이거나 비어 있으면 아예 로그인 시도 자체가 불가능하므로 즉시 예외 처리.
         if(requestData.getEmail() == null || requestData.getEmail().isBlank()) {
-            throw new IllegalArgumentException("해당 이메일이 존재하지 않습니다.");
+            throw new CustomException(INVALID_INPUT);
         }
 
         // 2) 비밀번호 입력값 검증
         // - 비밀번호도 null/빈값이면 검증할 의미가 없으므로 바로 예외 처리.
         if(requestData.getPassword() == null || requestData.getPassword().isBlank()) {
-            throw new IllegalArgumentException("해당 비밀번호가 존재하지 않습니다.");
+            throw new CustomException(INVALID_INPUT);
         }
 
         // 3) 이메일을 기준으로 데이터베이스에서 유저 조회
         // - 일치하는 이메일이 없으면 Optional이 비어 있으므로 orElseThrow로 예외 처리.
         User user = userRepository.findByEmail(requestData.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("해당 이메일이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(NOT_VALID_LOGIN));
 
         // 4) 비밀번호 비교 (passwordEncoder를 아직 배우지 않았으므로 평문 비교)
         // - user.getPassword() : DB에 저장된 비밀번호
         // - requestData.getPassword() : 사용자가 입력한 비밀번호
         // - 두 값이 다르면 예외 발생 (로그인 실패)
         if(!passwordEncoder.matches(requestData.getPassword(), user.getPassword())) {
-                throw new IllegalArgumentException("올바른 비밀번호를 입력하세요..");
+                throw new CustomException(NOT_VALID_LOGIN);
         }
 
         // 5) 이메일과 비밀번호가 모두 일치했으므로 로그인 성공
