@@ -32,7 +32,7 @@ public class User extends BaseTimeEntity {
      * - 필수값, 최대 30자
      * - 중복 허용
      */
-    @Column(length = 30, nullable = false)
+    @Column(length = 50, nullable = false)
     private String name;
 
     /**
@@ -40,7 +40,7 @@ public class User extends BaseTimeEntity {
      * - 필수값, 최대 20자
      * - unique=true → 중복 허용 안 함
      */
-    @Column(length = 20, nullable = false, unique = true)
+    @Column(length = 100, nullable = false, unique = true)
     private String email;
 
     /**
