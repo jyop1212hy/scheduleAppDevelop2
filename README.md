@@ -172,12 +172,9 @@ DELETE /comments/{id}
 
 - 글로벌 예외 핸들러(GlobalExceptionHandler)
 - Custom Exceptions
-    - `NotLoggedInException`
-    - `UnauthorizedUserAccessException`
-    - `UserNotFoundException`
-    - `ScheduleNotFoundException`
-    - `CommentNotFoundException`
-
+    - `CustomException`
+  - ErrorMessage
+  - 
 ---
 
 ## 📁 Project Structure
@@ -212,9 +209,10 @@ src/main/java/com.scheduleappdevelop2
  │     └── entity
  │
  └── global
-       ├── config      (PasswordEncoder, JPAAuditing, Filter)
-       ├── exception   (전역 예외핸들러 + 커스텀 예외)
-       └── baseTimeEntity
+       ├── config         (PasswordEncoder, JPAAuditing, WebConfig)
+       ├── exception      (전역 예외핸들러 + 커스텀 예외 +  이넘)
+       ├── baseTimeEntity (BaseTimeEntity)
+       └── fillter        (AuthFillter)
 ```
 
 ---
