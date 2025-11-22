@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.scheduleappdevelop2.global.exception.ErrorMessage.*;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/schedules/{scheduleId}/comments")
@@ -27,10 +29,10 @@ public class CommentController {
             HttpServletRequest sessionRequest) {
 
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new CustomException();
+        if (session == null) throw new CustomException(INVALID_INPUT);
 
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new CustomException();
+        if (sessionUser == null) throw new CustomException(NOT_FOUND_USER);
 
         return commentService.createComment(scheduleId, request, sessionUser);
     }
@@ -50,9 +52,9 @@ public class CommentController {
             HttpServletRequest sessionRequest) {
 
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new CustomException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new CustomException();
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         return commentService.updateComment(commentId, request, sessionUser);
     }
@@ -65,9 +67,9 @@ public class CommentController {
             HttpServletRequest sessionRequest) {
 
         HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new CustomException();
+        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
         SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new CustomException();
+        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
 
         commentService.deleteComment(commentId, sessionUser);
         return "댓글이 삭제되었습니다.";
