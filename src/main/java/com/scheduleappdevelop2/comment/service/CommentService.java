@@ -4,6 +4,7 @@ import com.scheduleappdevelop2.comment.dto.CommentCreateRequest;
 import com.scheduleappdevelop2.comment.dto.CommentResponse;
 import com.scheduleappdevelop2.comment.entity.Comment;
 import com.scheduleappdevelop2.comment.repository.CommentRepository;
+import com.scheduleappdevelop2.global.exception.CustomException;
 import com.scheduleappdevelop2.schedule.entity.Schedule;
 import com.scheduleappdevelop2.schedule.repository.ScheduleRepository;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.scheduleappdevelop2.global.exception.ErrorMessage.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,10 +30,10 @@ public class CommentService {
     public CommentResponse createComment(Long scheduleId, CommentCreateRequest request, SessionUser sessionUser) {
 
         Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ScheduleNotFoundException(scheduleId));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         User user = userRepository.findById(sessionUser.getId())
-                .orElseThrow(() -> new UserNotFoundException(sessionUser.getId()));
+                .orElseThrow(() -> new CustomException(NOT_VALID_LOGIN));
 
         Comment comment = Comment.of(request.getContent(), schedule, user);
         Comment saved = commentRepository.save(comment);
@@ -50,10 +53,10 @@ public class CommentService {
     public CommentResponse updateComment(Long commentId, CommentCreateRequest request, SessionUser sessionUser) {
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         if (!comment.getUser().getId().equals(sessionUser.getId())) {
-            throw new UnauthorizedUserAccessException(sessionUser.getId());
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         comment.update(request.getContent());
@@ -64,10 +67,10 @@ public class CommentService {
     public void deleteComment(Long commentId, SessionUser sessionUser) {
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         if (!comment.getUser().getId().equals(sessionUser.getId())) {
-            throw new UnauthorizedUserAccessException(sessionUser.getId());
+            throw new CustomException(NOT_VALID_OWNER);
         }
 
         commentRepository.delete(comment);
