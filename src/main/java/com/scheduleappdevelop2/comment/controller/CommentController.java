@@ -3,7 +3,6 @@ package com.scheduleappdevelop2.comment.controller;
 import com.scheduleappdevelop2.comment.dto.CommentCreateRequest;
 import com.scheduleappdevelop2.comment.dto.CommentResponse;
 import com.scheduleappdevelop2.comment.service.CommentService;
-import com.scheduleappdevelop2.global.exception.CustomException;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

@@ -1,7 +1,8 @@
 package com.scheduleappdevelop2.user.service;
 
 import com.scheduleappdevelop2.global.config.PasswordEncoder;
-import com.scheduleappdevelop2.global.exception.CustomException;
+import com.scheduleappdevelop2.global.exception.LoginFailException;
+import com.scheduleappdevelop2.global.exception.NotFoundException;
 import com.scheduleappdevelop2.user.dto.login.LoginResponse;
 import com.scheduleappdevelop2.user.dto.login.LoginRequest;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
+import static com.scheduleappdevelop2.global.exception.ErrorCode.NOT_AUTHENTICATED;
+import static com.scheduleappdevelop2.global.exception.ErrorCode.USER_NOT_FOUND;
 import static com.scheduleappdevelop2.global.exception.ErrorMessage.*;
 
 /**
@@ -98,13 +101,12 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse checkOneUser(Long id, SessionUser sessionUser) {
 
+        userRepository.findById(sessionUser.getId())
+                .orElseThrow(() -> new LoginFailException(NOT_AUTHENTICATED));
+
         // 조회할 유저 조회
         User oneUser = userRepository.findById(id)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
-        if (!oneUser.getId().equals(sessionUser.getId())) {
-            throw new CustomException(NOT_VALID_OWNER);
-        }
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
 
         return UserResponse.from(oneUser);
     }

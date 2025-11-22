@@ -1,6 +1,5 @@
 package com.scheduleappdevelop2.schedule.service;
 
-import com.scheduleappdevelop2.global.exception.CustomException;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleRequest;
 import com.scheduleappdevelop2.schedule.dto.UpdateSchedule.UpdateScheduleResponse;
 import com.scheduleappdevelop2.schedule.dto.createSchedule.CreateScheduleRequest;

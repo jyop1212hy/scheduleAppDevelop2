@@ -1,6 +1,7 @@
 package com.scheduleappdevelop2.user.controller;
 
-import com.scheduleappdevelop2.global.exception.CustomException;
+import com.scheduleappdevelop2.global.exception.GlobalExceptionHandler;
+import com.scheduleappdevelop2.global.exception.LoginFailException;
 import com.scheduleappdevelop2.user.dto.login.LoginRequest;
 import com.scheduleappdevelop2.user.dto.login.LoginResponse;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
@@ -20,8 +21,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.scheduleappdevelop2.global.exception.ErrorMessage.NOT_AUTHENTICATED;
-import static com.scheduleappdevelop2.global.exception.ErrorMessage.NOT_VALID_OWNER;
+import static com.scheduleappdevelop2.global.exception.ErrorCode.NOT_AUTHENTICATED;
+import static com.scheduleappdevelop2.global.exception.ErrorCode.NOT_VALID_OWNER;
+
+
 
 /**
  * UserController
@@ -70,21 +73,17 @@ public class UserController {
      * - 경로 변수 id로 유저를 조회하여 DTO로 반환한다.
      */
     @GetMapping("/{id}")
-    public UserResponse findUser(@PathVariable Long id, HttpServletRequest sessionRequest) {
+    public ResponseEntity<UserResponse> findUser(@PathVariable Long id, HttpSession sessionRequest) {
 
         // 세션에서 로그인 유저 정보 획득
-        HttpSession session = sessionRequest.getSession(false);
-        if (session == null) throw new CustomException(NOT_AUTHENTICATED);
-
-        SessionUser sessionUser = (SessionUser) session.getAttribute("loginUser");
-        if (sessionUser == null) throw new CustomException(NOT_AUTHENTICATED);
-
-        // 본인 아닌 다른 사람 조회 금지
-        if (!sessionUser.getId().equals(id)) {
-            throw new CustomException(NOT_VALID_OWNER);
+        SessionUser session = (SessionUser)sessionRequest.getAttribute("loginUser");
+        if(session == null) {
+            throw new LoginFailException(NOT_AUTHENTICATED);
         }
 
-        return userService.checkOneUser(id,sessionUser);
+        UserResponse sessionUsers = userService.checkOneUser(id, session);
+
+        return ResponseEntity.ok(sessionUsers);
     }
 
     /**
@@ -93,7 +92,7 @@ public class UserController {
      * - 수정하고 싶은 필드만 담은 DTO를 전달하면 Service에서 엔티티를 갱신한다.
      */
     @PatchMapping("/{id}")
-    public UpdateUserResponse update(@PathVariable Long id, HttpServletRequest sessionRequest,
+    public ResponseEntity<UpdateUserResponse> update(@PathVariable Long id, HttpServletRequest sessionRequest,
                                      @RequestBody UpdateUserRequest requestData) {
         HttpSession session = sessionRequest.getSession(false);
         if (session == null) throw new CustomException(NOT_AUTHENTICATED);
