@@ -4,6 +4,7 @@ import com.scheduleappdevelop2.comment.dto.CommentCreateRequest;
 import com.scheduleappdevelop2.comment.dto.CommentResponse;
 import com.scheduleappdevelop2.comment.entity.Comment;
 import com.scheduleappdevelop2.comment.repository.CommentRepository;
+import com.scheduleappdevelop2.global.exception.CustomException;
 import com.scheduleappdevelop2.schedule.entity.Schedule;
 import com.scheduleappdevelop2.schedule.repository.ScheduleRepository;
 import com.scheduleappdevelop2.user.dto.sessionUser.SessionUser;
